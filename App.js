@@ -13,6 +13,7 @@ import IMC from './src/pages/IMC';
 import Login from './src/pages/Login';
 import Fruta from './src/pages/Fruta';
 import Glicemia from './src/pages/Glicemia';
+import Remedio from './src/pages/Remedio';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +32,7 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Fruta" component={Fruta} options={{ headerShown: false }} />
         <Stack.Screen name="Glicemia" component={Glicemia} options={{ headerShown: false }} />
-
+        <Stack.Screen name="Remedio" component={Remedio} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

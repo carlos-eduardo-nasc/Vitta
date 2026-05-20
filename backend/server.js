@@ -68,7 +68,7 @@ app.post('/login', (req, res) => {
     }
 
     const usuario = results[0];
-    console.log('Usuário encontrado:', usuario); // ✅ Adiciona essa linha
+    console.log('Usuário encontrado:', usuario);
     
     res.json({ 
       message: 'Login bem-sucedido!', 
@@ -76,6 +76,7 @@ app.post('/login', (req, res) => {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
+        tipoSanguineo: usuario.tipoSanguineo, // ✅ Adiciona essa linha
         metaAgua: usuario.metaAgua,
         peso: usuario.peso,
         altura: usuario.altura

@@ -10,7 +10,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BRANCO,
   },
-  // --- HEADER ---
   header: {
     paddingTop: 50,
     paddingBottom: 20,
@@ -24,8 +23,6 @@ export const styles = StyleSheet.create({
     color: ROXO_VIBRANTE,
     letterSpacing: 1,
   },
-
-  // --- CARD DE RESULTADO ---
   welcomeSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -56,8 +53,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: ROXO_VIBRANTE,
   },
-
-  // --- GRID E CARDS DE TOQUE (80x80) ---
   rowGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -76,14 +71,16 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: CINZA_CLARO,
-    // Sombras
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#444',
+    textAlign: 'center',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  // Texto que mostra o número dentro do card
   cardValueText: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -97,8 +94,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
   },
-
-  // --- BOTÃO VOLTAR ---
   buttonContainer: {
     alignItems: 'center',
     paddingVertical: 10,
@@ -119,14 +114,5 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-  },
-
-  // --- ESTILO PARA ESCONDER O INPUT ---
-  hiddenInput: {
-    width: 0,
-    height: 0,
-    position: 'absolute',
-    bottom: 0,
-    opacity: 0, // Garante que não apareça nada
   },
 });

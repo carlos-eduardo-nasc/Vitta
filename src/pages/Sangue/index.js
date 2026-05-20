@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, FlatList, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, FlatList, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from './styles';
 
 export default function SangueScreen() {
   const navigation = useNavigation();
-  const [tipoSelecionado, setTipoSelecionado] = useState('O+');
+  const [tipoSelecionado, setTipoSelecionado] = useState('');
+  const [carregando, setCarregando] = useState(true);
   const ROXO_VIBRANTE = '#9932cc';
   const VERDE_SUCESSO = '#22C55E';
 
   const tipos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  // ✅ Busca o tipo sanguíneo ao abrir a tela
+  useEffect(() => {
+    carregarTipoSanguineo();
+  }, []);
+
+  const carregarTipoSanguineo = async () => {
+    try {
+      const usuarioSalvo = await AsyncStorage.getItem('@usuario_perfil');
+      if (usuarioSalvo) {
+        const usuario = JSON.parse(usuarioSalvo);
+        setTipoSelecionado(usuario.tipoSanguineo || 'O+');
+      }
+    } catch (error) {
+      console.warn('Erro ao carregar tipo sanguíneo:', error);
+      setTipoSelecionado('O+'); // Fallback
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  if (carregando) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={ROXO_VIBRANTE} />
+        <Text style={{ marginTop: 10, color: '#666' }}>Carregando...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
