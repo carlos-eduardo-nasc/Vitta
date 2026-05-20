@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 export default function Splash({ navigation }) {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('Home'); // ✅ Sempre vai pro Login
+      navigation.replace('Login'); // ✅ Sempre vai pro Login
     }, 3000);
 
     return () => clearTimeout(timer);

@@ -67,4 +67,48 @@ export default StyleSheet.create({
     color: ROXO,
     fontWeight: 'bold',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+  },
+  modalEmoji: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  modalTitulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#9932cc',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalTexto: {
+    fontSize: 15,
+    color: '#555',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  modalBotao: {
+    backgroundColor: '#9932cc',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalBotaoTexto: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

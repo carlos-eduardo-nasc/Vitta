@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, Pressable, ScrollView,
   Modal, KeyboardAvoidingView, Platform, Keyboard
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api'; // ✅ Importa o Axios
 import styles from './styles';
 
 const BotaoOpcao = ({ ativo, label, onPress }) => (
@@ -57,7 +57,6 @@ export default function Cadastro({ navigation }) {
   const [altura, setAltura] = useState('');
   const [tipoSanguineo, setTipoSanguineo] = useState('');
 
-  // ✅ Estados dos modais
   const [modalSucesso, setModalSucesso] = useState(false);
   const [modalErro, setModalErro] = useState(false);
   const [mensagemErro, setMensagemErro] = useState('');
@@ -99,12 +98,19 @@ export default function Cadastro({ navigation }) {
     Keyboard.dismiss();
 
     try {
-      await AsyncStorage.setItem('@usuario_perfil', JSON.stringify(usuario));
-      await AsyncStorage.setItem('@agua_meta', metaAgua.toString());
+      // ✅ Envia para o backend
+      const response = await api.post('/usuarios', usuario);
+      console.log('Resposta do servidor:', response.data);
+      
       setMetaCalculada(metaAgua);
-      setModalSucesso(true); // ✅ Abre modal de sucesso
+      setModalSucesso(true);
     } catch (error) {
-      mostrarErro('Não foi possível salvar o cadastro.');
+      console.error('Erro ao cadastrar:', error);
+      if (error.response?.data?.error) {
+        mostrarErro(error.response.data.error);
+      } else {
+        mostrarErro('Não foi possível salvar o cadastro. Verifique sua conexão.');
+      }
     }
   };
 
@@ -114,7 +120,7 @@ export default function Cadastro({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
 
-      {/* ✅ MODAL DE SUCESSO */}
+      {/* MODAL DE SUCESSO */}
       <Modal animationType="fade" transparent={true} visible={modalSucesso}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -138,7 +144,7 @@ export default function Cadastro({ navigation }) {
         </View>
       </Modal>
 
-      {/* ✅ MODAL DE ERRO */}
+      {/* MODAL DE ERRO */}
       <Modal animationType="fade" transparent={true} visible={modalErro}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

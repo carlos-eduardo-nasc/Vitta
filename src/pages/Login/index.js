@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, Pressable,
-  Alert, KeyboardAvoidingView, Platform, Image, ScrollView
+  KeyboardAvoidingView, Platform, Image, ScrollView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api';
 import styles from './styles';
 
 export default function Login({ navigation }) {
@@ -12,26 +13,34 @@ export default function Login({ navigation }) {
 
   const handleLogin = async () => {
     if (!email || !senha) {
-      Alert.alert('Atenção', 'Preencha e-mail e senha!');
+      alert('Preencha e-mail e senha!');
       return;
     }
 
     try {
-      const usuarioSalvo = await AsyncStorage.getItem('@usuario_perfil');
-      if (!usuarioSalvo) {
-        Alert.alert('Erro', 'Nenhum cadastro encontrado. Crie uma conta!');
+      const response = await api.post('/login', { email, senha });
+
+      if (!response.data || !response.data.usuario) {
+        alert('Erro ao processar login');
         return;
       }
 
-      const usuario = JSON.parse(usuarioSalvo);
+      const usuario = response.data.usuario;
 
-      if (usuario.email === email && usuario.senha === senha) {
-        navigation.replace('Home');
-      } else {
-        Alert.alert('Erro', 'E-mail ou senha incorretos!');
+      await AsyncStorage.setItem('@usuario_perfil', JSON.stringify(usuario));
+      
+      if (usuario.metaAgua) {
+        await AsyncStorage.setItem('@agua_meta', usuario.metaAgua.toString());
       }
+      
+      navigation.replace('Home');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível fazer login.');
+      console.error('Erro completo:', error);
+      if (error.response?.status === 401) {
+        alert('E-mail ou senha incorretos!');
+      } else {
+        alert('Não foi possível fazer login');
+      }
     }
   };
 
@@ -41,8 +50,6 @@ export default function Login({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-
-        {/* LOGO */}
         <Image
           source={require('../../../assets/logoVitta.jpeg')}
           style={styles.logo}
@@ -52,7 +59,6 @@ export default function Login({ navigation }) {
         <Text style={styles.title}>Bem-vindo(a) de volta!</Text>
         <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-        {/* FORMULÁRIO */}
         <Text style={styles.label}>E-mail</Text>
         <TextInput
           style={styles.input}
@@ -72,19 +78,16 @@ export default function Login({ navigation }) {
           onChangeText={setSenha}
         />
 
-        {/* BOTÃO LOGIN */}
         <Pressable style={styles.botaoLogin} onPress={handleLogin}>
           <Text style={styles.botaoLoginText}>Entrar</Text>
         </Pressable>
 
-        {/* LINK CADASTRO */}
         <Pressable onPress={() => navigation.navigate('Cadastro')}>
           <Text style={styles.linkCadastro}>
             Não tem conta?{' '}
             <Text style={styles.linkCadastroDestaque}>Cadastre-se</Text>
           </Text>
         </Pressable>
-
       </ScrollView>
     </KeyboardAvoidingView>
   );
