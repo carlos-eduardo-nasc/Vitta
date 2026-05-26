@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, Pressable, ScrollView,
   Modal, KeyboardAvoidingView, Platform, Keyboard
 } from 'react-native';
-import api from '../../services/api'; // ✅ Importa o Axios
+import api from '../../services/api';
 import styles from './styles';
 
 const BotaoOpcao = ({ ativo, label, onPress }) => (
@@ -78,16 +78,24 @@ export default function Cadastro({ navigation }) {
       return;
     }
 
-    const idade = calcularIdade(dataNascimento);
     const pesoNum = parseFloat(peso);
     const alturaNum = parseFloat(altura);
     const metaAgua = Math.round(pesoNum * 35);
     const alturaMts = alturaNum / 100;
     const imc = (pesoNum / (alturaMts * alturaMts)).toFixed(1);
 
+    // ✅ Mapeia sexo para o formato do Laravel
+    const generoMap = {
+      'M': 'MASCULINO',
+      'F': 'FEMININO',
+    };
+
     const usuario = {
-      nome, email, senha, dataNascimento,
-      idade, sexo,
+      nome,
+      email,
+      senha,
+      dataNascimento,
+      genero: generoMap[sexo],
       peso: pesoNum,
       altura: alturaNum,
       tipoSanguineo,
@@ -98,15 +106,16 @@ export default function Cadastro({ navigation }) {
     Keyboard.dismiss();
 
     try {
-      // ✅ Envia para o backend
-      const response = await api.post('/usuarios', usuario);
+      const response = await api.post('/register', usuario);
       console.log('Resposta do servidor:', response.data);
       
       setMetaCalculada(metaAgua);
       setModalSucesso(true);
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
-      if (error.response?.data?.error) {
+      if (error.response?.data?.message) {
+        mostrarErro(error.response.data.message);
+      } else if (error.response?.data?.error) {
         mostrarErro(error.response.data.error);
       } else {
         mostrarErro('Não foi possível salvar o cadastro. Verifique sua conexão.');
@@ -119,7 +128,6 @@ export default function Cadastro({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-
       {/* MODAL DE SUCESSO */}
       <Modal animationType="fade" transparent={true} visible={modalSucesso}>
         <View style={styles.modalOverlay}>

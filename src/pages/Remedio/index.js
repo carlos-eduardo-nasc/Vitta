@@ -9,9 +9,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Audio } from 'expo-av'; // ✅ Import do áudio
 import { styles } from './styles';
 
-// Configuração de notificações
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -29,20 +29,23 @@ export default function Remedio() {
   const [horario, setHorario] = useState(new Date());
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [modalConfirmacao, setModalConfirmacao] = useState(false);
+  const [modalSucesso, setModalSucesso] = useState(false); // ✅ Novo modal
   const [remedioTemp, setRemedioTemp] = useState(null);
+  const [sound, setSound] = useState(null);
 
   const ROXO_VIBRANTE = '#9932cc';
+
+  // ✅ Limpa o som quando sair da tela
+  useEffect(() => {
+    return sound ? () => { sound.unloadAsync(); } : undefined;
+  }, [sound]);
 
   // ✅ Configuração inicial das notificações
   useEffect(() => {
     const setup = async () => {
       try {
         const { status } = await Notifications.requestPermissionsAsync();
-
-        if (status !== "granted") {
-          console.log("Permissão de notificação negada");
-          return;
-        }
+        if (status !== "granted") return;
 
         if (Platform.OS === 'android') {
           await Notifications.setNotificationChannelAsync("default", {
@@ -53,15 +56,29 @@ export default function Remedio() {
             sound: true,
           });
         }
-
-        console.log("Notificações configuradas com sucesso!");
       } catch (error) {
         console.log("Erro ao configurar notificações:", error);
       }
     };
-
     setup();
   }, []);
+
+  // ✅ Toca o som de confirmação
+  const tocarSomConfirmacao = async () => {
+    try {
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true, // Toca mesmo no modo silencioso do iPhone
+      });
+
+      const { sound: soundObj } = await Audio.Sound.createAsync(
+        require('../../../assets/Sons/som.mp3')
+      );
+      setSound(soundObj);
+      await soundObj.playAsync();
+    } catch (error) {
+      console.log('Erro ao tocar som:', error);
+    }
+  };
 
   const solicitarPermissaoNotificacao = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
@@ -78,17 +95,13 @@ export default function Remedio() {
       alert('Precisamos de permissão para acessar suas fotos!');
       return;
     }
-
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
     });
-
-    if (!resultado.canceled) {
-      setFoto(resultado.assets[0].uri);
-    }
+    if (!resultado.canceled) setFoto(resultado.assets[0].uri);
   };
 
   const tirarFoto = async () => {
@@ -97,21 +110,30 @@ export default function Remedio() {
       alert('Precisamos de permissão para usar a câmera!');
       return;
     }
-
     const resultado = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
     });
-
-    if (!resultado.canceled) {
-      setFoto(resultado.assets[0].uri);
-    }
+    if (!resultado.canceled) setFoto(resultado.assets[0].uri);
   };
 
   const agendarNotificacao = async (remedio) => {
     try {
-      const id = await Notifications.scheduleNotificationAsync({
+      const agora = new Date();
+      const horarioEscolhido = new Date();
+      const [hora, minuto] = remedio.horario.split(':');
+      horarioEscolhido.setHours(parseInt(hora));
+      horarioEscolhido.setMinutes(parseInt(minuto));
+      horarioEscolhido.setSeconds(0);
+
+      if (horarioEscolhido <= agora) {
+        horarioEscolhido.setDate(horarioEscolhido.getDate() + 1);
+      }
+
+      const segundosRestantes = Math.floor((horarioEscolhido - agora) / 1000);
+
+      await Notifications.scheduleNotificationAsync({
         content: {
           title: '💊 Hora do Remédio!',
           body: `Está na hora de tomar ${remedio.nome} - ${remedio.dosagem}`,
@@ -119,12 +141,10 @@ export default function Remedio() {
         },
         trigger: {
           type: "timeInterval",
-          seconds: 5,
+          seconds: segundosRestantes,
           repeats: false,
         },
       });
-
-      console.log('Notificação agendada! ID:', id);
     } catch (error) {
       console.error('Erro ao agendar notificação:', error);
     }
@@ -154,7 +174,6 @@ export default function Remedio() {
     try {
       const remediosSalvos = await AsyncStorage.getItem('@remedios');
       const remedios = remediosSalvos ? JSON.parse(remediosSalvos) : [];
-
       remedios.push(remedioTemp);
       await AsyncStorage.setItem('@remedios', JSON.stringify(remedios));
 
@@ -164,9 +183,14 @@ export default function Remedio() {
         console.warn('Erro ao agendar notificação:', error);
       }
 
+      // ✅ Fecha modal de confirmação
       setModalConfirmacao(false);
-      alert('Remédio cadastrado com sucesso! 🎉\n\nVocê receberá uma notificação de teste em 5 segundos!');
-      
+
+      // ✅ Toca o som e abre modal de sucesso
+      await tocarSomConfirmacao();
+      setModalSucesso(true);
+
+      // ✅ Limpa os campos
       setFoto(null);
       setNome('');
       setQuantidade('');
@@ -201,13 +225,10 @@ export default function Remedio() {
             <View style={styles.modalInfo}>
               <Text style={styles.modalLabel}>Remédio:</Text>
               <Text style={styles.modalValor}>{remedioTemp?.nome}</Text>
-              
               <Text style={styles.modalLabel}>Quantidade:</Text>
               <Text style={styles.modalValor}>{remedioTemp?.quantidade}</Text>
-              
               <Text style={styles.modalLabel}>Dosagem:</Text>
               <Text style={styles.modalValor}>{remedioTemp?.dosagem}</Text>
-              
               <Text style={styles.modalLabel}>Horário da notificação:</Text>
               <Text style={styles.modalValor}>{remedioTemp?.horario}</Text>
             </View>
@@ -222,7 +243,6 @@ export default function Remedio() {
               >
                 <Text style={styles.modalBotaoTexto}>Cancelar</Text>
               </Pressable>
-              
               <Pressable
                 style={[styles.modalBotao, styles.modalBotaoConfirmar]}
                 onPress={confirmarSalvamento}
@@ -234,8 +254,28 @@ export default function Remedio() {
         </View>
       </Modal>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* ✅ MODAL DE SUCESSO */}
+      <Modal animationType="fade" transparent={true} visible={modalSucesso}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSucessoContent}>
+            <View style={styles.checkCircle}>
+              <MaterialCommunityIcons name="check-bold" size={60} color="#fff" />
+            </View>
+            <Text style={styles.sucessoTitulo}>Remédio Cadastrado!</Text>
+            <Text style={styles.sucessoTexto}>
+              Você receberá uma notificação às {remedioTemp?.horario || ''}
+            </Text>
+            <Pressable
+              style={styles.sucessoBotao}
+              onPress={() => setModalSucesso(false)}
+            >
+              <Text style={styles.sucessoBotaoTexto}>Ok!</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
 
+      <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.fotoContainer}>
           {foto ? (
             <Image source={{ uri: foto }} style={styles.foto} />
@@ -260,28 +300,16 @@ export default function Remedio() {
 
         <View style={styles.form}>
           <Text style={styles.label}>Nome do Remédio</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Paracetamol"
-            value={nome}
-            onChangeText={setNome}
-          />
+          <TextInput style={styles.input} placeholder="Ex: Paracetamol"
+            value={nome} onChangeText={setNome} />
 
           <Text style={styles.label}>Quantidade</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 1 comprimido"
-            value={quantidade}
-            onChangeText={setQuantidade}
-          />
+          <TextInput style={styles.input} placeholder="Ex: 1 comprimido"
+            value={quantidade} onChangeText={setQuantidade} />
 
           <Text style={styles.label}>Dosagem</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 500mg"
-            value={dosagem}
-            onChangeText={setDosagem}
-          />
+          <TextInput style={styles.input} placeholder="Ex: 500mg"
+            value={dosagem} onChangeText={setDosagem} />
 
           <Text style={styles.label}>Horário da Notificação</Text>
           <Text style={styles.sublabel}>
@@ -289,7 +317,6 @@ export default function Remedio() {
           </Text>
 
           {Platform.OS === 'web' ? (
-            // ✅ Web: input HTML nativo
             <input
               type="time"
               value={horario.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -311,12 +338,8 @@ export default function Remedio() {
               }}
             />
           ) : (
-            // ✅ Mobile: DateTimePicker
             <>
-              <Pressable
-                style={styles.horarioButton}
-                onPress={() => setMostrarPicker(true)}
-              >
+              <Pressable style={styles.horarioButton} onPress={() => setMostrarPicker(true)}>
                 <MaterialCommunityIcons name="clock-outline" size={24} color={ROXO_VIBRANTE} />
                 <Text style={styles.horarioTexto}>
                   {horario.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -343,14 +366,10 @@ export default function Remedio() {
         <Pressable style={styles.botaoSalvar} onPress={salvarRemedio}>
           <Text style={styles.botaoSalvarTexto}>Salvar Remédio</Text>
         </Pressable>
-
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <Pressable
-          style={styles.buttonVoltar}
-          onPress={() => navigation.navigate('Home')}
-        >
+        <Pressable style={styles.buttonVoltar} onPress={() => navigation.navigate('Home')}>
           <Text style={styles.buttonText}>Voltar</Text>
         </Pressable>
       </View>

@@ -20,17 +20,31 @@ export default function Login({ navigation }) {
     try {
       const response = await api.post('/login', { email, senha });
 
-      if (!response.data || !response.data.usuario) {
+      if (!response.data || !response.data.user) {
         alert('Erro ao processar login');
         return;
       }
 
-      const usuario = response.data.usuario;
+      const usuario = response.data.user;
+      const token = response.data.access_token; // ✅ Token do Laravel
 
-      await AsyncStorage.setItem('@usuario_perfil', JSON.stringify(usuario));
-      
-      if (usuario.metaAgua) {
-        await AsyncStorage.setItem('@agua_meta', usuario.metaAgua.toString());
+      // ✅ Salva o token
+      await AsyncStorage.setItem('@token', token);
+
+      // ✅ Salva o perfil mapeando campos do Laravel
+      await AsyncStorage.setItem('@usuario_perfil', JSON.stringify({
+        id: usuario.id_usuario,
+        nome: usuario.nome,
+        email: usuario.email,
+        tipoSanguineo: usuario.tipo_sanguineo,
+        metaAgua: usuario.meta_agua,
+        peso: usuario.peso,
+        altura: usuario.altura,
+        imc: usuario.imc,
+      }));
+
+      if (usuario.meta_agua) {
+        await AsyncStorage.setItem('@agua_meta', usuario.meta_agua.toString());
       }
       
       navigation.replace('Home');

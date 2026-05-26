@@ -207,4 +207,47 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     fontStyle: 'italic',
   },
+
+  // ✅ Modal de Sucesso
+  modalSucessoContent: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 30,
+    alignItems: 'center',
+  },
+  checkCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#22C55E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  sucessoTitulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  sucessoTexto: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  sucessoBotao: {
+    backgroundColor: '#9932cc',
+    paddingVertical: 14,
+    paddingHorizontal: 50,
+    borderRadius: 12,
+  },
+  sucessoBotaoTexto: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
