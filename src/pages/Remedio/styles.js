@@ -250,4 +250,17 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  botaoConfirmarHorario: {
+  backgroundColor: '#9932cc',
+  padding: 12,
+  borderRadius: 12,
+  alignItems: 'center',
+  marginTop: 8,
+},
+botaoConfirmarHorarioTexto: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 15,
+},
 });

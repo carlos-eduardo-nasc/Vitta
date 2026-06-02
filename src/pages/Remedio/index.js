@@ -135,7 +135,7 @@ export default function Remedio() {
 
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: '💊 Hora do Remédio!',
+          title: 'Hora do Remédio!',
           body: `Está na hora de tomar ${remedio.nome} - ${remedio.dosagem}`,
           sound: true,
         },
@@ -263,7 +263,7 @@ export default function Remedio() {
             </View>
             <Text style={styles.sucessoTitulo}>Remédio Cadastrado!</Text>
             <Text style={styles.sucessoTexto}>
-              Você receberá uma notificação às {remedioTemp?.horario || ''}
+              {/* Você receberá uma notificação às {remedioTemp?.horario || ''}; */}
             </Text>
             <Pressable
               style={styles.sucessoBotao}
@@ -348,17 +348,28 @@ export default function Remedio() {
               </Pressable>
 
               {mostrarPicker && (
-                <DateTimePicker
-                  value={horario}
-                  mode="time"
-                  is24Hour={true}
-                  display="default"
-                  onChange={(event, selectedDate) => {
-                    setMostrarPicker(Platform.OS === 'ios');
-                    if (selectedDate) setHorario(selectedDate);
-                  }}
-                />
-              )}
+                  <>
+                    <DateTimePicker
+                      value={horario}
+                      mode="time"
+                      is24Hour={true}
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={(event, selectedDate) => {
+                        if (selectedDate) setHorario(selectedDate);
+                      }}
+                      style={{ backgroundColor: '#fff', width: '100%' }}
+                      locale="pt-BR"
+                    />
+                    {Platform.OS === 'ios' && (
+                      <Pressable
+                        style={styles.botaoConfirmarHorario}
+                        onPress={() => setMostrarPicker(false)}
+                      >
+                        <Text style={styles.botaoConfirmarHorarioTexto}>Confirmar horário</Text>
+                      </Pressable>
+                    )}
+                  </>
+                )}
             </>
           )}
         </View>
